@@ -1,0 +1,22 @@
+{
+  "name": "type-quickly",
+  "version": "3.0.0",
+  "description": "NPMs fastest, most comprehensive, and most correct typing package.",
+  "main": "type-quickly.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "type",
+    "typing",
+    "checker",
+    "check",
+    "type checker",
+    "type check",
+    "is",
+    "type-of",
+    "typeof"
+  ],
+  "author": "Mark Albert Willis meouzer@gmail.com",
+  "license": "ISC"
+}

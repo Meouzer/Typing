@@ -1,10 +1,10 @@
 # Typing in JavaScript
 
-Obviously, JavaScript should have a robust typing system, but never had a clear 
+Obviously, JavaScript should have a robust typing system but never had a clear 
 typing vision. No attempt was ever made for built-in typing of programmer 
 defined classes, while the typing mechanisms for built-in classes are add-hoc 
-and broken. Let's be clear, the discussion below shows that JavaScript could 
-easily have built-in typing but dropped the ball through bad decisions.
+and broken. Let's be clear. JavaScript could easily had have built-in typing 
+were it not for inexplicably bad design.
 
 Let's now digress to see what a typing function should do. If Klass is a class 
 then the *Klass objects* are `Klass.prototypes` and all objects deriving from it.
@@ -40,28 +40,64 @@ which never lived up to its potential after ES5.
     }
 ```
 
-If JavaScript had been paying just a bit of due dilignece, `nativeType(x)`
+If JavaScript had been paying just a bit of due diligence, `nativeType(x)`
 would without exception correctly type all objects `x`.
 
-This `nativeType(x)` function correctly types Date, RegExp, objects 
-and all error variant, and typed array objects proving 
-that JavaScript had the full means for correct typing, but dropped the ball. 
+This `nativeType(x)` function correctly types Date objects, RegExp objects 
+Error objects, and all typed array objects proving that JavaScript had the full 
+means for correct typing, but dropped the ball. 
 For example, it doesn't correctly type Boolean, Number, String, and Array 
-objects because the class prototypes type to `"Boolean"` , `"Number"`,  
+objects because the class prototypes type to `"Boolean"` , `"Number"`, 
 `"String"`, and  `"Array"` rather than the correct `"Object`. So even in ES5, 
 where `toString()` is at its best, things start to go bad. In ES5, the programmer 
 can make a simple corrective adjustment, by testing `x` for being the class prototype, 
 and if it is return `"Object"`.
 
-In ES6, things start to go sidewise because `toString()` no longer always
+In ES6, things start to go side-wise because `toString()` no longer always
 distinguishes between edge cases and class instances. Past ES6, `toString()`
 goes completely defunct because it never distinguishes between the class
 instance, the edge case, and the class prototype.
 
-## The Construtor-Prototype Technique
+## More on the Edge Case
+
+The edge case of a class `Klass` is `edgeCase = Object.create(Klass.prototype)`
+that isn't to be used as a class prototype itself nor to be modified to become
+a class instance of `Klass` via a call to `Klass.call(x,...)` or `Klass.apply(x,[...])`.
+
+Because of edge cases it is not possible to write a typing function that is fully correct.
+For the most part, typing functions have no choice but to type edge cases of built-in classes
+to the name of the class because the class edge case can not be distinguished from the
+class instance.
+
+However, for all ES6 classes, except for Promise, the class edge case can be correctly
+typed either because `toString()` makes the distinction between the class edge case and
+the class instance or because there is an innocuous method that can be tested to make
+the distinction.
+
+For example, suppose the internal prototype of `x` is `Map.prototype`. You
+know `x` is either a class instance `new Map()` or the edge case `Object.create(Map.prototype)`, but
+you want to know which. Use of `toString()` is no good because it does not distinguish
+between the class instance and the edge case. So one is forced to call
+`Map.prototype.has.call(x,{})` to make the distinction by seeing whether an
+exception is thrown or not. The `has()` method is called through the prototype
+to avoid spoofing, e.g., a `has()` method could be written directly on the edge
+case in an attempt to spoof.
+
+The only JavaScript classes beyond ES6 for which it is possible to correctly type the class
+edge case are AggregateError, WeakRef, and Blob. That leaves 26 JavaScript classes for
+which it is not possible to correctly type the class edge case. For all 100+ node classes
+it is not possible to correctly type the class edge case.
+
+Anyway, type-robustly is NPMs only typing package that is fully correct when it is
+possible to be correct. Type-quickly is NPMs second most correct typing package,
+but makes no attempt to correctly type class edge cases except to correctly type
+boxed Symbols and boxed BigInts. All other packages are highly incorrect because
+they incorrectly type class prototypes and secondary class objects.
+
+## The Constructor-Prototype Technique
 
 Gluing together the pieces of JavaScript's shattered typing system is a two-dimensional
-challenge. You first use `toSring()` or constructor names to search the first dimension
+challenge. You first use `toString()` or constructor names to search the first dimension
 and pin down an object to a particular class say Boolean. You then search the second
 dimension to determine where in the downward inheritance chain of `Boolean.prototype`
 the object is positioned: is the object `Boolean.prototype` itself so it should be typed
@@ -141,26 +177,10 @@ typing packages the fastest on NPM.
 
 So the author ends up with two NPM typing packages type-quickly and type-robustly.
 The first makes little attempt to handle edge cases, while the second handles
-edge cases whenever JavaScript makes this possible. It is possible in ES6
-because `toString()` sometimes makes the distinction between edge cases
-and class instances, and for the times it doesn't, one may call required class methods,
-in an innocuous manner, to see if they work. However, beyond ES6 it is not
-possible because `toString()` completely fails and there are no innocuous 
-methods to call.
-
-For example, suppose the internal prototype of `x` is `Map.prototype`. You
-know `x` is either a class instance `new Map()` or the edge case `Object.create(Map.prototype)`, but
-you want to know which. Use of `toString()` is no good because it does not distinguish
-between the class instance and the edge case. So one is forced to call
-`Map.prototype.has.call(x,{})` to make the distinction by seeing whether an
-exception is thrown or not. The `has()` method is called through the prototype
-to avoid spoofing, e.g., a `has()` method could be written directly on the edge
-case in an attempt to spoof.
-
-The type-quickly and type-robustly packages are the fastest, most comprehensive,
-and most correct typing packages on NPM. Type-robustly is 57% slower than
-type-quickly but is still faster than all other NPM competitors save one, while that
-one, like all other competitors, is highly incorrect.
+edge cases whenever JavaScript makes this possible.  The type-quickly and type-robustly 
+packages are the fastest, most comprehensive, and most correct typing packages on NPM. 
+Type-robustly is 57% slower than type-quickly but is still faster than all other NPM 
+competitors save one, while that one, like all other competitors, is highly incorrect.
 
 ## The Typing Conspiracy
 
@@ -194,7 +214,7 @@ members must be compelled to testify through the threat of incarceration.
 
 JavaScript architects eventually were forced to admit that detection of edge cases was 
 important after all. That is, the `Array.isArray()` function and Node's type checkers 
-do not produce false positives on edge cases or on class prototpes for that matter. 
+do not produce false positives on edge cases or on class prototypes for that matter. 
 For example, if `edgeCase = Object.create(Array.prototype)` then `Array.isArray(edgeCase)` 
 is `false` as it should be. This is a tacit admission that the design of `toString()` is 
 seriously flawed as it frequently does not distinguish between class instances and edge cases

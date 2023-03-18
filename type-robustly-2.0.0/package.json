@@ -1,0 +1,22 @@
+{
+  "name": "type-robustly",
+  "version": "2.0.0",
+  "description": "NPMs most comprehensive and most correct typing package. Blazingly fast",
+  "main": "type-robustly.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "type",
+    "typing",
+    "checker",
+    "check",
+    "type checker",
+    "type check",
+    "is",
+    "type-of",
+    "typeof"
+  ],
+  "author": "Mark Albert Willis meouzer@gmail.com",
+  "license": "ISC"
+}

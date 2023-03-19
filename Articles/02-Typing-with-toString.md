@@ -484,8 +484,8 @@ function type(x)
 }
 ```
 
-The fall-back code is demonstrated in the type-quickly folder's ReadMe file,
-and also in the *Constructor-Prototype-Technique* article.
+The fall-back code is shown in the 01-typing-in-JavaScript.md article,
+section *The Constructor-Prototype Technique*. 
 
 ## Summary
 
